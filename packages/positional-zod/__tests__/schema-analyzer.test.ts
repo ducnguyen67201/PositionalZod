@@ -236,7 +236,8 @@ describe("analyzeSchema", () => {
   describe("unsupported types", () => {
     it("throws SchemaError for z.record()", () => {
       const schema = z.object({
-        data: z.record(z.string()),
+        // z.record(keyType, valueType) - Zod v4 requires both args
+        data: z.record(z.string(), z.string()),
       });
 
       expect(() => analyzeSchema(schema)).toThrow(SchemaError);

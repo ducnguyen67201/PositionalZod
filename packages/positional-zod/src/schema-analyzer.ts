@@ -33,28 +33,99 @@ function getDef(schema: z.ZodTypeAny): Record<string, unknown> {
 }
 
 /**
+ * Map of Zod v4 lowercase type names to Zod v3-style type names.
+ */
+const v4TypeMap: Record<string, string> = {
+  string: "ZodString",
+  number: "ZodNumber",
+  boolean: "ZodBoolean",
+  date: "ZodDate",
+  object: "ZodObject",
+  array: "ZodArray",
+  enum: "ZodEnum",
+  nativeEnum: "ZodNativeEnum",
+  literal: "ZodLiteral",
+  optional: "ZodOptional",
+  nullable: "ZodNullable",
+  default: "ZodDefault",
+  catch: "ZodCatch",
+  branded: "ZodBranded",
+  pipeline: "ZodPipeline",
+  readonly: "ZodReadonly",
+  union: "ZodUnion",
+  discriminatedUnion: "ZodDiscriminatedUnion",
+  effects: "ZodEffects",
+  any: "ZodAny",
+  unknown: "ZodUnknown",
+  record: "ZodRecord",
+  map: "ZodMap",
+  set: "ZodSet",
+  function: "ZodFunction",
+  lazy: "ZodLazy",
+  promise: "ZodPromise",
+};
+
+/**
  * Get the type name from a Zod schema.
  * Works with both Zod v3 and v4.
+ *
+ * Zod v3: Uses `_def.typeName` (e.g., "ZodString")
+ * Zod v4: Uses `_zod.def.type` (e.g., "string") - we convert to v3 format
  */
 function getTypeName(schema: z.ZodTypeAny): string {
   const def = getDef(schema);
-  return (def["typeName"] as string) ?? "Unknown";
+
+  // v3: typeName is directly available
+  if (def["typeName"]) {
+    return def["typeName"] as string;
+  }
+
+  // v4: type is lowercase, convert to ZodXxx format
+  const v4Type = def["type"] as string;
+  if (v4Type && v4TypeMap[v4Type]) {
+    return v4TypeMap[v4Type];
+  }
+
+  // Fallback for unknown types
+  return v4Type ? `Zod${v4Type.charAt(0).toUpperCase()}${v4Type.slice(1)}` : "Unknown";
 }
 
 /**
  * Get the inner type from a wrapper schema (optional, nullable, array, etc.).
+ *
+ * Zod v3: Uses `innerType` or `type`
+ * Zod v4: Uses `innerType` for wrappers, `element` for arrays
  */
 function getInnerType(schema: z.ZodTypeAny): z.ZodTypeAny | null {
   const def = getDef(schema);
 
   // Try various property names used across versions
-  const inner =
-    (def["innerType"] as z.ZodTypeAny) ??
-    (def["type"] as z.ZodTypeAny) ??
-    (def["schema"] as z.ZodTypeAny) ??
-    null;
+  // Note: Check innerType first, then element (v4 arrays), then type (v3 arrays)
+  // But don't return `type` if it's a string (v4 uses type: "array" as a string)
+  const innerType = def["innerType"];
+  if (innerType && typeof innerType === "object") {
+    return innerType as z.ZodTypeAny;
+  }
 
-  return inner;
+  // v4 arrays use "element"
+  const element = def["element"];
+  if (element && typeof element === "object") {
+    return element as z.ZodTypeAny;
+  }
+
+  // v3 arrays use "type"
+  const type = def["type"];
+  if (type && typeof type === "object") {
+    return type as z.ZodTypeAny;
+  }
+
+  // v3 ZodEffects uses "schema"
+  const schemaInner = def["schema"];
+  if (schemaInner && typeof schemaInner === "object") {
+    return schemaInner as z.ZodTypeAny;
+  }
+
+  return null;
 }
 
 /**
@@ -81,6 +152,9 @@ function getShape(
 
 /**
  * Get enum values from an enum schema.
+ *
+ * Zod v3: def.values (array of strings)
+ * Zod v4: def.entries (plain object { a: 'a', b: 'b' })
  */
 function getEnumValues(schema: z.ZodTypeAny): string[] {
   const def = getDef(schema);
@@ -90,12 +164,18 @@ function getEnumValues(schema: z.ZodTypeAny): string[] {
     return def["values"] as string[];
   }
 
-  // v4: def.entries (Map) or def.values (Set)
+  // v4: def.entries (plain object like { a: 'a', b: 'b' })
   const entries = def["entries"];
-  if (entries instanceof Map) {
-    return Array.from(entries.keys()) as string[];
+  if (entries && typeof entries === "object" && !Array.isArray(entries)) {
+    // Could be a Map (unlikely in v4) or a plain object
+    if (entries instanceof Map) {
+      return Array.from(entries.keys()) as string[];
+    }
+    // Plain object - return the keys (which equal the values for string enums)
+    return Object.keys(entries as Record<string, unknown>);
   }
 
+  // v4 alternative: def.values could be a Set
   const values = def["values"];
   if (values instanceof Set) {
     return Array.from(values) as string[];
@@ -106,12 +186,20 @@ function getEnumValues(schema: z.ZodTypeAny): string[] {
 
 /**
  * Get literal value(s) from a literal schema.
+ *
+ * Zod v3: def.value (single value)
+ * Zod v4: def.values (array)
  */
 function getLiteralValue(schema: z.ZodTypeAny): unknown {
   const def = getDef(schema);
 
-  // v4: def.values (Set)
+  // v4: def.values (array)
   const values = def["values"];
+  if (Array.isArray(values)) {
+    return values.length === 1 ? values[0] : values;
+  }
+
+  // v4 alternative: could be a Set
   if (values instanceof Set) {
     const arr = Array.from(values);
     return arr.length === 1 ? arr[0] : arr;

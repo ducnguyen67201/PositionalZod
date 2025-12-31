@@ -21,8 +21,6 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
@@ -49,8 +47,7 @@ jobs:
 
     strategy:
       matrix:
-        zod-version: ['3.22.0', '3.24.0']
-        # Add zod v4 when stable: '4.0.0'
+        zod-version: ['3.22.0', '3.24.0', '4.2.1']
 
     steps:
       - name: Checkout
@@ -58,8 +55,6 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
