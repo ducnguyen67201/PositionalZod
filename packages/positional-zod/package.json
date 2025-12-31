@@ -36,11 +36,15 @@
     "positional",
     "token-efficient"
   ],
-  "author": "",
+  "author": "Duc Nguyen <danielbaker06072001@gmail.com>",
   "license": "MIT",
+  "homepage": "https://github.com/ducnguyen67201/PositionalZod#readme",
+  "bugs": {
+    "url": "https://github.com/ducnguyen67201/PositionalZod/issues"
+  },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git+https://github.com/ducnguyen67201/PositionalZod.git"
   },
   "peerDependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
