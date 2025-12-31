@@ -1,0 +1,67 @@
+{
+  "name": "positional-zod",
+  "version": "0.1.0",
+  "description": "Schema-driven positional format for LLM structured outputs",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./errors": {
+      "import": "./dist/errors.js",
+      "types": "./dist/errors.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "zod",
+    "llm",
+    "openai",
+    "anthropic",
+    "gemini",
+    "structured-output",
+    "positional",
+    "token-efficient"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "peerDependencies": {
+    "zod": "^3.22.0 || ^4.0.0",
+    "openai": "^4.0.0",
+    "@anthropic-ai/sdk": "^0.30.0",
+    "@google/generative-ai": "^0.21.0"
+  },
+  "peerDependenciesMeta": {
+    "openai": {
+      "optional": true
+    },
+    "@anthropic-ai/sdk": {
+      "optional": true
+    },
+    "@google/generative-ai": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "zod": "^3.24.0",
+    "@types/node": "^22.0.0"
+  },
+  "optionalDependencies": {
+    "zod-v4": "npm:zod@^4.0.0-beta.0"
+  }
+}
