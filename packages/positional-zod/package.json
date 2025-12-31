@@ -22,7 +22,9 @@
     "build": "tsc -p tsconfig.build.json",
     "test": "vitest",
     "test:run": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "demo": "tsx test.ts",
+    "comparison": "tsx comparison.ts"
   },
   "keywords": [
     "zod",
@@ -58,7 +60,11 @@
     }
   },
   "devDependencies": {
+    "@toon-format/toon": "^2.1.0",
     "@types/node": "^22.0.0",
+    "dotenv": "^17.2.3",
+    "openai": "^6.15.0",
+    "tsx": "^4.21.0",
     "zod": "^4.2.1"
   },
   "optionalDependencies": {
